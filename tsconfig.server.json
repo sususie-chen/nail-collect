@@ -22,5 +22,9 @@
       "@db/*": ["./db/*"]
     }
   },
-  "include": ["api", "contracts", "db", "api/boot.ts"]
+  "include": [
+    "api/**/*.ts",      /* 包含 api 文件夹下所有的 ts 文件 */
+    "contracts/**/*.ts",
+    "db/**/*.ts"
+  ]
 }
