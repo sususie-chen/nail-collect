@@ -1,21 +1,37 @@
-import type { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
-import type { User } from "@db/schema";
-import { authenticateRequest } from "./kimi/auth";
+import { verifySessionToken } from "./kimi/session";
+import { getDb } from "./queries/connection";
+import { users } from "@db/schema";
+import { eq } from "drizzle-orm";
+import type { Context, TrpcContext } from "./types";
 
-export type TrpcContext = {
-  req: Request;
-  resHeaders: Headers;
-  user?: User;
-};
+export type { TrpcContext };
 
-export async function createContext(
-  opts: FetchCreateContextFnOptions,
-): Promise<TrpcContext> {
-  const ctx: TrpcContext = { req: opts.req, resHeaders: opts.resHeaders };
-  try {
-    ctx.user = await authenticateRequest(opts.req.headers);
-  } catch {
-    // Authentication is optional here
+export async function createContext(req: Request): Promise<Context> {
+  const authHeader = req.headers.get("authorization");
+  let token: string | undefined;
+
+  if (authHeader?.startsWith("Bearer ")) {
+    token = authHeader.slice(7);
   }
-  return ctx;
+
+  if (!token) {
+    return { user: null };
+  }
+
+  const payload = await verifySessionToken(token);
+  if (!payload) {
+    return { user: null };
+  }
+
+  const db = getDb();
+  const [user] = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, payload.userId));
+
+  if (!user) {
+    return { user: null };
+  }
+
+  return { user };
 }
