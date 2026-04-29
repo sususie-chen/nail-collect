@@ -1,14 +1,22 @@
 {
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.server.tsbuildinfo",
+    /* 解决 TS2550: 确保编译目标包含现代 JS 特性 */
     "target": "ES2022",
-    "lib": ["ES2022"],
+    "lib": ["ES2022", "ESNext.AsyncIterable"], 
+    
+    /* 解决 TS1378: 必须使用 ESNext 才能在顶层使用 await */
     "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "moduleDetection": "force",
+    
+    /* 核心：确保允许在模块中使用现代元属性 */
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+
     "types": ["node"],
     "skipLibCheck": true,
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "moduleDetection": "force",
     "noEmit": true,
     "strict": true,
     "esModuleInterop": true,
@@ -16,9 +24,9 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@contracts/*": ["./contracts/*"],
+      "@contracts/*": ["["./contracts/*"],
       "@db/*": ["./db/*"]
     }
   },
-  "include": ["api", "contracts", "db"]
+  "include": ["api", "contracts", "db", "api/boot.ts"] 
 }
