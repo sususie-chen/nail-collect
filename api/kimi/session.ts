@@ -1,40 +1,31 @@
-import * as jose from "jose";
-import { env } from "../lib/env";
+import { SignJWT, jwtVerify } from "jose";
 import type { SessionPayload } from "./types";
 
-const JWT_ALG = "HS256";
+const algorithm = "HS256";
 
-export async function signSessionToken(
-  payload: SessionPayload,
-): Promise<string> {
-  const secret = new TextEncoder().encode(env.appSecret);
-  return new jose.SignJWT(payload)
-    .setProtectedHeader({ alg: JWT_ALG })
+function getKey() {
+  // Use DATABASE_URL as the secret key so it's stable across deployments
+  const url = process.env.DATABASE_URL || "local-dev-secret-key-fallback";
+  return new TextEncoder().encode(url.slice(0, 32).padEnd(32, "0"));
+}
+
+export async function signSessionToken(userId: number): Promise<string> {
+  return new SignJWT({ userId } satisfies SessionPayload)
+    .setProtectedHeader({ alg: algorithm })
     .setIssuedAt()
-    .setExpirationTime("1 year")
-    .sign(secret);
+    .setExpirationTime("365d")
+    .sign(getKey());
 }
 
 export async function verifySessionToken(
-  token: string,
-): Promise<SessionPayload | null> {
-  if (!token) {
-    console.warn("[session] No token provided for verification.");
-    return null;
-  }
+  token: string
+): Promise<{ userId: number } | null> {
   try {
-    const secret = new TextEncoder().encode(env.appSecret);
-    const { payload } = await jose.jwtVerify(token, secret, {
-      algorithms: [JWT_ALG],
+    const { payload } = await jwtVerify(token, getKey(), {
+      clockTolerance: 60,
     });
-    const { unionId, clientId } = payload;
-    if (!unionId || !clientId) {
-      console.warn("[session] JWT payload missing required fields.");
-      return null;
-    }
-    return { unionId, clientId } as SessionPayload;
-  } catch (error) {
-    console.warn("[session] JWT verification failed:", error);
+    return payload as unknown as { userId: number };
+  } catch {
     return null;
   }
 }
