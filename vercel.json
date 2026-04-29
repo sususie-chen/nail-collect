@@ -1,7 +1,9 @@
 {
   "version": 2,
   "rewrites": [
+    /* 1. 所有以 /api 开头的请求，都交给后端的 boot.ts 处理 */
     { "source": "/api/(.*)", "destination": "/api/boot.ts" },
+    /* 2. 其他所有请求（比如访问首页），都交给前端的 index.html */
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
