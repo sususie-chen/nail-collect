@@ -7,13 +7,13 @@ import {
   text,
   longtext,
   timestamp,
-
 } from "drizzle-orm/mysql-core";
 
 export const users = mysqlTable("users", {
   id: serial("id"),
-  unionId: varchar("unionId", { length: 255 }).notNull().unique(),
+  unionId: varchar("unionId", { length: 255 }).notNull().unique(), // 存用户名
   name: varchar("name", { length: 255 }),
+  password: varchar("password", { length: 255 }), // 可选密码
   email: varchar("email", { length: 320 }),
   avatar: text("avatar"),
   role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
@@ -48,13 +48,13 @@ export const products = mysqlTable("products", {
 export type Product = typeof products.$inferSelect;
 export type InsertProduct = typeof products.$inferInsert;
 
-// 标签表（色系/功能）
+// 标签表
 export const tags = mysqlTable("tags", {
   id: serial("id"),
   userId: bigint("userId", { mode: "number", unsigned: true }).notNull(),
   name: varchar("name", { length: 255 }).notNull(),
   type: mysqlEnum("type", ["color", "function"]).notNull(),
-  colorHex: varchar("colorHex", { length: 7 }), // 仅色系标签使用
+  colorHex: varchar("colorHex", { length: 7 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
@@ -73,7 +73,7 @@ export type ProductTag = typeof productTags.$inferSelect;
 export const recognitionRecords = mysqlTable("recognitionRecords", {
   id: serial("id"),
   userId: bigint("userId", { mode: "number", unsigned: true }).notNull(),
-  imageData: longtext("imageData").notNull(), // base64 原图
+  imageData: longtext("imageData").notNull(),
   status: mysqlEnum("status", ["pending", "completed", "failed"]).default("pending").notNull(),
   result: longtext("result"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -81,15 +81,14 @@ export const recognitionRecords = mysqlTable("recognitionRecords", {
 
 export type RecognitionRecord = typeof recognitionRecords.$inferSelect;
 
-// 识别出的产品类型（前端/JSON 使用）
 export interface RecognizedProduct {
-  id: string;           // 临时 ID
-  imageData: string;      // 裁切后的小方图 base64
-  regionImage: string;    // 完整条目区域 base64（供对照）
+  id: string;
+  imageData: string;
+  regionImage: string;
   brand: string;
   shadeCode: string;
   shadeName?: string;
-  colorHex?: string;      // 提取的主色调
-  tagIds?: number[];      // 选中的标签 ID
+  colorHex?: string;
+  tagIds?: number[];
   isNailPolish: boolean;
 }
