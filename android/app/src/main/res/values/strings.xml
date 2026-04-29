@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">nail-polish-display</string>
+    <string name="title_activity_main">nail-polish-display</string>
+    <string name="package_name">com.nailpolish.app</string>
+    <string name="custom_url_scheme">com.nailpolish.app</string>
+</resources>

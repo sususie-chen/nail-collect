@@ -1,0 +1,6 @@
+{
+	"appId": "com.nailpolish.app",
+	"appName": "nail-polish-display",
+	"webDir": "dist/public",
+	"bundledWebRuntime": false
+}
