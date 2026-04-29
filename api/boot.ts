@@ -2,9 +2,9 @@ import { Hono } from "hono";
 import { bodyLimit } from "hono/body-limit";
 import type { HttpBindings } from "@hono/node-server";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
-import { appRouter } from "./lib-router/router";
-import { createContext } from "./lib-router/context";
-import { env } from "./lib-router/lib/env";
+import { appRouter } from "../server/router";
+import { createContext } from "../server/context";
+import { env } from "../server/lib/env";
 
 const app = new Hono<{ Bindings: HttpBindings }>();
 
@@ -23,7 +23,7 @@ export default app;
 
 if (env.isProduction) {
   const { serve } = await import("@hono/node-server");
-  const { serveStaticFiles } = await import("./lib-router/lib/vite");
+  const { serveStaticFiles } = await import("../server/lib/vite");
   serveStaticFiles(app);
 
   const port = parseInt(process.env.PORT || "3000");
