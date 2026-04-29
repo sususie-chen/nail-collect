@@ -1,10 +1,5 @@
 {
   "files": [],
-  "references": [
-    { "path": "./tsconfig.app.json" },
-    { "path": "./tsconfig.node.json" },
-    { "path": "./tsconfig.server.json" }
-  ],
   "compilerOptions": {
     "composite": true,
     "declaration": true,
@@ -19,7 +14,16 @@
       "@db/*": ["./db/*"]
     }
   },
-  /* 添加下面这一段，让根配置文件知道这些文件的存在 */
-  "include": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" },
+    { "path": "./tsconfig.server.json" }
+  ],
+  /* 关键点：显式告诉 TS 主项目包含这些后端逻辑文件 */
+  "include": [
+    "api/**/*.ts",
+    "contracts/**/*.ts",
+    "db/**/*.ts"
+  ],
   "exclude": ["node_modules", "dist"]
 }
