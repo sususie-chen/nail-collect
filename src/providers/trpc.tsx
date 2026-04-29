@@ -9,29 +9,25 @@ export const trpc = createTRPCReact<AppRouter>();
 
 const queryClient = new QueryClient({
   defaultOptions: {
-    queries: {
-      retry: (failureCount, error) => {
-        if (
-          error instanceof Error &&
-          (error.message.includes("UNAUTHORIZED") ||
-            error.message.includes("401"))
-        ) {
-          return false;
-        }
-        return failureCount < 2;
-      },
-    },
-    mutations: {
-      retry: false,
-    },
+    queries: { retry: 1 },
+    mutations: { retry: false },
   },
 });
+
+function getAuthToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("nail_auth_token");
+}
 
 const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
       url: "/api/trpc",
       transformer: superjson,
+      headers() {
+        const token = getAuthToken();
+        return token ? { Authorization: `Bearer ${token}` } : {};
+      },
       fetch(input, init) {
         return globalThis.fetch(input, {
           ...(init ?? {}),
