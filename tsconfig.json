@@ -6,20 +6,20 @@
     { "path": "./tsconfig.server.json" }
   ],
   "compilerOptions": {
-    /* 核心：确保根目录也支持复合编译映射 */
     "composite": true,
     "declaration": true,
     "declarationMap": true,
-    
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
       "@contracts/*": ["./contracts/*"],
       "@db/*": ["./db/*"]
     }
-  }
+  },
+  /* 添加下面这一段，让根配置文件知道这些文件的存在 */
+  "include": [],
+  "exclude": ["node_modules", "dist"]
 }
