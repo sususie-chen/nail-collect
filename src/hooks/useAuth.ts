@@ -1,58 +1,85 @@
+import { useCallback, useMemo } from "react";
 import { trpc } from "@/providers/trpc";
-import { useCallback, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router";
-import { LOGIN_PATH } from "@/const";
 
-type UseAuthOptions = {
-  redirectOnUnauthenticated?: boolean;
-  redirectPath?: string;
-};
+export interface UnifiedUser {
+  id: number;
+  name: string;
+  email?: string | null;
+  avatar?: string | null;
+  role?: string;
+}
 
-export function useAuth(options?: UseAuthOptions) {
-  const { redirectOnUnauthenticated = false, redirectPath = LOGIN_PATH } =
-    options ?? {};
+function setToken(token: string) {
+  localStorage.setItem("nail_auth_token", token);
+}
 
-  const navigate = useNavigate();
+function removeToken() {
+  localStorage.removeItem("nail_auth_token");
+}
 
+export function useAuth() {
   const utils = trpc.useUtils();
-
   const {
     data: user,
-    isLoading,
+    isLoading: userLoading,
     error,
-    refetch,
   } = trpc.auth.me.useQuery(undefined, {
-    staleTime: 1000 * 60 * 5,
     retry: false,
+    refetchOnWindowFocus: true,
   });
 
-  const logoutMutation = trpc.auth.logout.useMutation({
-    onSuccess: async () => {
-      await utils.invalidate();
-      navigate(redirectPath);
+  const loginMutation = trpc.auth.login.useMutation({
+    onSuccess: (data) => {
+      if (data.token) {
+        setToken(data.token);
+        utils.invalidate();
+      }
     },
   });
 
-  const logout = useCallback(() => logoutMutation.mutate(), [logoutMutation]);
+  const logoutMutation = trpc.auth.logout.useMutation({
+    onSuccess: () => {
+      removeToken();
+      utils.invalidate();
+      window.location.reload();
+    },
+  });
 
-  useEffect(() => {
-    if (redirectOnUnauthenticated && !isLoading && !user) {
-      const currentPath = window.location.pathname;
-      if (currentPath !== redirectPath) {
-        navigate(redirectPath);
-      }
-    }
-  }, [redirectOnUnauthenticated, isLoading, user, navigate, redirectPath]);
+  const isAuthenticated = useMemo(() => {
+    return !!user && !error;
+  }, [user, error]);
 
-  return useMemo(
-    () => ({
-      user: user ?? null,
-      isAuthenticated: !!user,
-      isLoading: isLoading || logoutMutation.isPending,
-      error,
-      logout,
-      refresh: refetch,
-    }),
-    [user, isLoading, logoutMutation.isPending, error, logout, refetch],
+  const isLoading = userLoading;
+
+  const unifiedUser: UnifiedUser | null = useMemo(() => {
+    if (!user) return null;
+    return {
+      id: user.id,
+      name: user.name || "用户",
+      email: user.email,
+      avatar: user.avatar,
+      role: user.role || "user",
+    };
+  }, [user]);
+
+  const login = useCallback(
+    async (username: string, password?: string) => {
+      await loginMutation.mutateAsync({ username, password });
+    },
+    [loginMutation]
   );
+
+  const logout = useCallback(() => {
+    removeToken();
+    logoutMutation.mutate();
+  }, [logoutMutation]);
+
+  return {
+    user: unifiedUser,
+    isAuthenticated,
+    isLoading,
+    isAdmin: unifiedUser?.role === "admin",
+    login,
+    logout,
+  };
 }
