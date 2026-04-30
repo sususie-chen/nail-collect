@@ -6,7 +6,7 @@
       "destination": "/api/boot.js"
     },
     {
-      "source": "/(.*)",
+      "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
   ]
