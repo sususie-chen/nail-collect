@@ -4,10 +4,6 @@
     {
       "source": "/api/:path*",
       "destination": "/api/boot.ts"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
     }
   ]
 }
