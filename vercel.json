@@ -2,11 +2,15 @@
   "version": 2,
   "rewrites": [
     {
-      "source": "/api/:path*",
+      "source": "/api/health",
       "destination": "/api/boot.js"
     },
     {
-      "source": "/((?!api/).*)",
+      "source": "/api/trpc/:path*",
+      "destination": "/api/boot.js"
+    },
+    {
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ]
