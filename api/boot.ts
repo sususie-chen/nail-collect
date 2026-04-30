@@ -7,7 +7,7 @@ import { createContext } from "../server/context";
 const app = new Hono();
 app.use("*", cors());
 
-// 显式补全 /api
+// 显式拦截所有发送到 /api/trpc 的请求
 app.all("/api/trpc/*", async (c) => {
   return fetchRequestHandler({
     endpoint: "/api/trpc",
