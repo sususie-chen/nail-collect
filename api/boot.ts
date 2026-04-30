@@ -11,7 +11,7 @@ app.use(bodyLimit({ maxSize: 50 * 1024 * 1024 }));
 // 处理 tRPC 请求
 app.use("/trpc/*", async (c) => {
   return fetchRequestHandler({
-    endpoint: "/api/trpc.ts",
+    endpoint: "api/trpc.ts",
     req: c.req.raw,
     router: appRouter,
     createContext: () => createContext(c.req.raw),
